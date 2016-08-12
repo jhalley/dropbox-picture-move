@@ -1,0 +1,5 @@
+app = {}
+app['key'] = 'xxx'
+app['secret'] = 'xxx'
+app['oauth'] = {}
+app['oauth']['token'] = 'xxx'
