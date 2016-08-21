@@ -1,15 +1,17 @@
 import config
 import dropbox
+import time
 from pprint import pprint as pp
 
 class DropboxPictureMover():
-    def __init__(self, token, camera_upload_folder, bucket_folder, bucket_size, debug_mode = False):
+    def __init__(self, token, camera_upload_folder, bucket_folder, bucket_size, debug_mode = False, move_rate_limit = 0):
         # Init
         self.client = dropbox.client.DropboxClient(token)
         self.camera_upload_folder = camera_upload_folder
         self.bucket_folder = bucket_folder
         self.bucket_size = bucket_size
         self.debug_mode = debug_mode
+        self.move_rate_limit = move_rate_limit
         
         # Internal vars
         self.all_pictures = []
@@ -35,7 +37,7 @@ class DropboxPictureMover():
         bucket_name = '%s/%s to %s (%s pics)'%(
             self.bucket_folder,
             start_file.split('/')[-1].rsplit('.', 1)[0],
-            end_file.split('/')[-1].split('.', 1)[0],
+            end_file.split('/')[-1].rsplit('.', 1)[0],
             self.bucket_size
         )
 
@@ -72,10 +74,12 @@ class DropboxPictureMover():
 
                 self.client.file_move(move_pic, '%s/%s'%(bucket_name, move_pic.split('/')[-1]))
 
+                # Apply rate limits if provided
+                time.sleep(self.move_rate_limit)
 
 
 if __name__ == '__main__':
-    app = DropboxPictureMover(config.app['oauth']['token'], '/Camera Uploads', '/pic_buckets', 500, debug_mode = True)
+    app = DropboxPictureMover(config.app['oauth']['token'], '/Camera Uploads', '/pic_buckets', 500, debug_mode = True, move_rate_limit = 1)
     print app.movePicsToBucket()
     #print app.createPictureBucket('a', 'b')
     #pp(app.getAllPictures())
